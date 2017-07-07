@@ -1,3 +1,5 @@
+#include "WPILib.h"
+#include "AHRS.h"
 #include <IterativeRobot.h>
 #include <Joystick.h>
 #include <Solenoid.h>
@@ -62,9 +64,17 @@ const int AngleSliderCoe = 50;//角度调整拨片调整倍数
 const double SlowClimbSpeed = 0.3;//慢速爬绳转速
 const double FastClimbSpeed = 1;//快速爬绳转速
 const double MeterConvert = 1.3;
-const double AutoMovingSpeed = 0.8;//自动移动速度
+const double AutoMovingSpeed = 0.8;//自动移动
 
-								   //——————状态设定
+	///地图
+	const int x = 0;
+	const int y = 1;
+
+	double CogPos[] = { 1,2 };
+	double CogAngle = 0;
+	double BallPos[] = { 3,2 };
+
+//——————状态设定
 bool BotSolenoidDown = false;
 bool UpSolenoidDown = false;
 bool CogCollected = false;
@@ -76,16 +86,37 @@ bool Calibrated = false;
 //——————阶段函数
 class Robot : public frc::IterativeRobot {
 public:
-	Robot() {
-		myRobot.SetExpiration(0.1);
-		timer.Start();
-	}
-
-private:
+	AHRS *ahrs;
+	std::shared_ptr<NetworkTable> table;
 	frc::RobotDrive myRobot{ RightBaseMotorPin, LeftBaseMotorPin };  // Robot drive system
 	frc::Joystick stick{ 0 };         // Only joystick
 	frc::LiveWindow* lw = frc::LiveWindow::GetInstance();
 	frc::Timer timer;
+	
+	Robot():
+	table(NULL),
+        stick(0),
+        ahrs(NULL),
+        lw(NULL),
+	{		
+		myRobot.SetExpiration(0.1);
+		timer.Start();
+		table = NetworkTable::GetTable("datatable");
+        	lw = LiveWindow::GetInstance();
+        	try {
+            		ahrs = new AHRS(SPI::Port::kMXP);
+       		} catch (std::exception& ex ){
+            		std::string err_string = "Error instantiating navX MXP:  ";
+            		err_string += ex.what();
+            		DriverStation::ReportError(err_string.c_str());
+        	}
+        	if ( ahrs ) {
+            		LiveWindow::GetInstance()->AddSensor("IMU", "Gyro", ahrs);
+       		}
+	}
+
+private:
+
 
 	frc::Solenoid BotCogSolenoid{ BotCogSolenoidPin };
 	frc::Solenoid UpCogSolenoid{ UpCogSolenoidPin };
@@ -171,49 +202,11 @@ private:
 		//此处更新传感器状态!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//CogCollected=
 		//SolenoidDown=
-		MapUpdate();
 		ReadFromRaspberryPi();
 		for{i = 1; i<ButNum; i++} {
 			ThisButState[i] = stick.GetRawButton(i);
 			ButStateChange[i] = (ThisButState[i] != LastButState[i])
 		}
-	}
-
-	///地图
-	const int x = 0;
-	const int y = 1;
-
-	double Pos[] = { 0,0 };
-	double ThisFacingAngle = 0;
-
-	double CogPos[] = { 100,200 };
-	double CogAngle = 0;
-	double BallPos[] = { 300,200 };
-
-	void MapUpdate() {
-		double ThisAcc[] = { 0,0 };
-		double ThisVel[] = { 0,0 };
-		double ThisTime = timer.Get();
-		TimeChange = ThisTime - LastTime;
-
-		/*
-		！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
-		此处对ThisAcc,ThisFacingAngle更新
-		读取出来之后进行换算 使用MeterConvert常量
-		即
-		ThisAcc/=MeterConvert;
-		未读取出来的话记默认0，0
-		*/
-		ThisVel[x] = LastVel[x] + TimeChange*(LastAcc[x] + ThisAcc[x]) / 2;
-		Pos[x] += TimeChange*(ThisVel[x] + LastVel[x]) / 2;
-		ThisVel[y] = LastVel[y] + TimeChange*(LastAcc[y] + ThisAcc[y]) / 2;
-		Pos[y] += TimeChange*(ThisVel[y] + LastVel[y]) / 2;
-
-		LastAcc[x] = ThisAcc[x];
-		LastAcc[y] = ThisAcc[y];
-		LastVel[x] = ThisVel[x];
-		LastVel[y] = ThisVel[y];
-		LastTime = ThisTime;
 	}
 
 
@@ -268,42 +261,43 @@ private:
 		ReadFromRaspberryPi();
 		//读取image_dis;
 		image_dis = image_dis*direct_dis*Standard_dis;
-		CogPos[x] = Pos[x] + direct_dis*cos(ThisFacingAngle) + image_dis*sin(ThisFacingAngle);
-		CogPos[y] = Pos[y] + direct_dis*sin(ThisFacingAngle) + image_dis*cos(ThisFacingAngle);
+		CogPos[x] = ahrs->GetDisplacementX() + direct_dis*cos(ahrs->GetYaw()) + image_dis*sin(ahrs->GetYaw());
+		CogPos[y] = ahrs->GetDisplacementY() + direct_dis*sin(ahrs->GetYaw()) + image_dis*cos(ahrs->GetYaw());
 	}
-	bool MoveToPos(double XPos, double YPos, double FinalFacingAngle, double MovingSpeed) {
-		double TargetAngle;
-		double x_dif;
-		double y_dif;
-		double angletol = 0.04;
-		double angleact = 0.5;
-		double P_angle = 0.9;//角度调整P系数
-		double distol = 0.01;
+	
+	double angletol=0.04;
+	double angleact=0.5;
+	double P_angle=0.9;//角度调整P系数
+	double distol=0.01;
+	
+	bool MoveToPos(double XPos,double YPos, double FinalFacingAngle,double MovingSpeed){		double angletol=0.04;
+		double angleact=0.5;
+		double P_angle=0.9;//角度调整P系数
+		double distol=0.01;
+		double TargetAngle=0;
+    		double x_dif=0;
+    		double y_dif=0;
 
+    		if(InRange(XPos,distol,ahrs->GetDisplacementX())&&(InRange(YPos,distol,ahrs->GetDisplacementY()))){
+    			if(InRange(ahrs->GetYaw(),angletol,FinalFacingAngle)){
+    				return true;
+    			}else{
+    				myRobot.Drive(0,-(FinalFacingAngle-ahrs->GetYaw())*P_angle);
+    			}
+    		}else{
+    			x_dif=ahrs->GetDisplacementX()-XPos;
+    			y_dif=ahrs->GetDisplacementY()-YPos;
+    			TargetAngle=atan(x_dif/y_dif);
+    			if(InRange(ahrs->GetYaw(),angleact,TargetAngle)){
+    				myRobot.Drive(MovingSpeed,-(TargetAngle-ahrs->GetYaw())*P_angle);
+    			}else{
+    				myRobot.Drive(0.0,-(TargetAngle-ahrs->GetYaw())*P_angle);
+    			}
+    		}
 
-		if ((InRange(XPos, distol, Pos[x]) && (InRange(YPos, distol, Pos[y])) {
-			if (InRange(ThisFacingAngle, angletol, FinalFacingAngle)) {
-				return true;
-			}
-			else {
-				myRobot.Drive(0, -(FinalFacingAngle - ThisFacingAngle)*P_angle)
-			}
+    		return false;
 
-		}
-		else {
-			x_dif = Pos[x] - XPos;
-			y_dif = Pos[y] - YPos;
-			TargetAngle = atan(x_dif / y_dif);
-			if (InRange(ThisFacingAngle, angleact, TargetAngle)) {
-				myRobot.Drive(MovingSpeed, -(TargetAngle - ThisFacingAngle)*P)
-			}
-			else {
-				myRobot.Drive(0, -(TargetAngle - ThisFacingAngle)*P)
-			}
-		}
-
-		return false;
-	}
+    	}
 	bool InRange(double input, double tolerate, double target) {
 		return ((input >= target - tolerate) && (input <= target + tolerate));
 	}
@@ -354,7 +348,7 @@ private:
 		double a = 2;
 		double g = 9.8;
 
-		distance = sqrt(pow((BallPos[x] - Pos[x]), 2) + pow((BallPos[y] - Pos[y]), 2));
+		distance = sqrt(pow((BallPos[x] - ahrs->GetDisplacementX()), 2) + pow((BallPos[y] - ahrs->GetDisplacementY()), 2));
 		result = pow(distance, 2)*AirFriCoe + sqrt(2 * pow(cos(a), 2) / ((g*pow(distance, 2))*(tan(a)*distance - height));
 		return result;
 	}
