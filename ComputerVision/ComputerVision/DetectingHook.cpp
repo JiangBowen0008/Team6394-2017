@@ -7,14 +7,14 @@
 using namespace cv;
 using namespace std;
 
-//·´¹âÌõ´óĞ¡
+//åå…‰æ¡å¤§å°
 int AreaMax = 1000;
 
-//·´¹âÌõ³¤¿í±È
+//åå…‰æ¡é•¿å®½æ¯”
 int RefleMaxRatio = 4.0;
 int RefleMinRatio = 2.0;
 
-//·´¹âÌõ¼ä¾à-¿í¶È±È
+//åå…‰æ¡é—´è·-å®½åº¦æ¯”
 int RefleInterRatio = 2.0;
 const int Max_RefleInterRatio = 5.0;
 
@@ -23,50 +23,54 @@ int thresh = 150;
 int max_thresh = 255;
 RNG rng(12345);
 
-/// º¯ÊıÉùÃ÷
+/// å‡½æ•°å£°æ˜
 void thresh_callback(int, void*);
 double similar(int a, int b) {
 	return abs(double(a) - double(b)) / (double(a) + double(b));
 }
 
-/** @Ö÷º¯Êı */
+/** @ä¸»å‡½æ•° */
 int main(int argc, char** argv)
 {
-	/// ÔØÈëÔ­Í¼Ïñ, ·µ»Ø3Í¨µÀÍ¼Ïñ
+	/// è½½å…¥åŸå›¾åƒ, è¿”å›3é€šé“å›¾åƒ
 	src = imread("1.jpg", 1);
-
-	/// ×ª»¯³É»Ò¶ÈÍ¼Ïñ²¢½øĞĞÆ½»¬
+	
+	///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!åŠ ä¸Šè¿™å¥è¯
+	resize(src, src, Size(), 0.5, 0.5);
+	
+	
+	/// è½¬åŒ–æˆç°åº¦å›¾åƒå¹¶è¿›è¡Œå¹³æ»‘
 	cvtColor(src, src_gray, CV_BGR2GRAY);
 	//blur(src_gray, src_gray, Size(3, 3));
 
-	/// ´´½¨´°¿Ú
+	/// åˆ›å»ºçª—å£
 	char* source_window = "Source";
 	namedWindow(source_window, CV_WINDOW_AUTOSIZE);
 	imshow(source_window, src);
 
 	createTrackbar(" Threshold:", "Source", &thresh, max_thresh, thresh_callback);
-	createTrackbar(" ·´¹âÌõ¼ä¾à:", "Source", &RefleInterRatio, Max_RefleInterRatio, thresh_callback);
+	createTrackbar(" åå…‰æ¡é—´è·:", "Source", &RefleInterRatio, Max_RefleInterRatio, thresh_callback);
 	thresh_callback(0, 0);
 
 	waitKey(0);
 	return(0);
 }
 
-/** @thresh_callback º¯Êı */
+/** @thresh_callback å‡½æ•° */
 void thresh_callback(int, void*)
 {
 	Mat threshold_output;
 
 	vector<vector<Point> > contours;
 	vector<Vec4i> hierarchy;
-	/// Ê¹ÓÃThreshold¼ì²â±ßÔµ
+	/// ä½¿ç”¨Thresholdæ£€æµ‹è¾¹ç¼˜
 	threshold(src_gray, threshold_output, thresh, 255, THRESH_BINARY);
 	namedWindow("ThresholdView");
 	imshow("ThresholdView", threshold_output);
-	/// ÕÒµ½ÂÖÀª
+	/// æ‰¾åˆ°è½®å»“
 	findContours(threshold_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-	/// ¶à±ßĞÎ±Æ½üÂÖÀª + »ñÈ¡¾ØĞÎºÍÔ²ĞÎ±ß½ç¿ò
+	/// å¤šè¾¹å½¢é€¼è¿‘è½®å»“ + è·å–çŸ©å½¢å’Œåœ†å½¢è¾¹ç•Œæ¡†
 	vector<vector<Point> > contours_poly(contours.size());
 	vector<Rect> boundRect(contours.size());
 	vector<Point2f>center(contours.size());
@@ -81,9 +85,9 @@ void thresh_callback(int, void*)
 	for (i = 0; i < contours.size(); i++)
 	{
 		approxPolyDP(Mat(contours[i]), contours_poly[i], 10, true);
-		//ÄâºÏ¸³Öµ¸øcontours_poly
+		//æ‹Ÿåˆèµ‹å€¼ç»™contours_poly
 		boundRect[i] = boundingRect(Mat(contours_poly[i]));
-		//ÄâºÏ¾ØĞÎ
+		//æ‹ŸåˆçŸ©å½¢
 		TmpRatio = (double(boundRect[i].height) / double(boundRect[i].width));
 		TmpArea = (double(boundRect[i].height) * double(boundRect[i].width));
 		if ((TmpRatio <= RefleMaxRatio) && (TmpRatio >= RefleMinRatio) && (TmpArea >= AreaMax)) {
@@ -95,10 +99,10 @@ void thresh_callback(int, void*)
 		else RectFlag[i] = false;
 
 		//minEnclosingCircle(contours_poly[i], center[i], radius[i]);
-		//ÄâºÏÔ²ĞÎ
+		//æ‹Ÿåˆåœ†å½¢
 	}
 
-	//Ñ°ÕÒÓ«¹âÌõ
+	//å¯»æ‰¾è§å…‰æ¡
 	double MatchScore = 2;
 	double TmpScore;
 	int area1, area2, h1, h2;
@@ -132,7 +136,7 @@ void thresh_callback(int, void*)
 		area2 = boundRect[r2].width *boundRect[r2].height;
 
 
-		/// »­¶à±ßĞÎÂÖÀª + °üÎ§µÄ¾ØĞÎ¿ò + Ô²ĞÎ¿ò
+		/// ç”»å¤šè¾¹å½¢è½®å»“ + åŒ…å›´çš„çŸ©å½¢æ¡† + åœ†å½¢æ¡†
 		color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
 		rectangle(drawing, boundRect[r1].tl(), boundRect[r1].br(), color, 3, 8, 0);
 		rectangle(drawing, boundRect[r2].tl(), boundRect[r2].br(), color, 3, 8, 0);
@@ -144,7 +148,7 @@ void thresh_callback(int, void*)
 		circle(drawing, center[i], (int)radius[i], color, 2, 8, 0);
 		}*/
 
-		/// ÏÔÊ¾ÔÚÒ»¸ö´°¿Ú
+		/// æ˜¾ç¤ºåœ¨ä¸€ä¸ªçª—å£
 		imshow("Contours", drawing);
 	}
 
