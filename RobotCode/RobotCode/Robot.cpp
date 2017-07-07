@@ -8,63 +8,63 @@
 #include <Timer.h>
 #include <math.h>
 
-//°´Å¥Éè¶¨
+//æŒ‰é’®è®¾å®š
 const int ButNum = 12;
-bool LastButState[ButNum];//´¢´æÉÏ´Î°´Å¥
-bool ThisButState[ButNum];//´¢´æÉÏ´Î°´Å¥
-bool ButStateChange[ButNum];//°´Å¥±ä»¯
+bool LastButState[ButNum];//å‚¨å­˜ä¸Šæ¬¡æŒ‰é’®
+bool ThisButState[ButNum];//å‚¨å­˜ä¸Šæ¬¡æŒ‰é’®
+bool ButStateChange[ButNum];//æŒ‰é’®å˜åŒ–
 
 enum DefineBut {
-	CollectBallBut = 2,//¼ñÇòÄ¦²ÁÂÖ°´Å¥
-	CallibrateBut = 6,//ÉäÇò×Ô¶¯Ğ£×¼°´Å¥
-	ShootBallBut = 4,//ÉäÇò°´Å¥
-	CogSolenoidDownBut = 3,//³İÂÖÊÕ¼¯°´Å¥
-	PutCogBut = 5;//¹Ò³İÂÖ°´Å¥
-FastModeBut = 10,//¿ìËÙÄ£Ê½ÇĞ»»°´Å¥
-SlowModeBut = 9,//ÂıËÙÄ£Ê½ÇĞ»»°´Å¥
-FastClimbBut = 8,//¿ìËÙÅÀÉı
-SlowClimbBut = 7//ÂıËÙÅÀÉı
+	CollectBallBut = 2,//æ¡çƒæ‘©æ“¦è½®æŒ‰é’®
+	CallibrateBut = 6,//å°„çƒè‡ªåŠ¨æ ¡å‡†æŒ‰é’®
+	ShootBallBut = 4,//å°„çƒæŒ‰é’®
+	CogSolenoidDownBut = 3,//é½¿è½®æ”¶é›†æŒ‰é’®
+	PutCogBut = 5;//æŒ‚é½¿è½®æŒ‰é’®
+FastModeBut = 10,//å¿«é€Ÿæ¨¡å¼åˆ‡æ¢æŒ‰é’®
+SlowModeBut = 9,//æ…¢é€Ÿæ¨¡å¼åˆ‡æ¢æŒ‰é’®
+FastClimbBut = 8,//å¿«é€Ÿçˆ¬å‡
+SlowClimbBut = 7//æ…¢é€Ÿçˆ¬å‡
 } ButSetting;
 
-//¡ª¡ª¡ª¡ª¡ª¡ªÁ¬½ÓÉè¶¨
+//â€”â€”â€”â€”â€”â€”è¿æ¥è®¾å®š
 
 //CAN
 enum DefineCANPin {
-	BotCogSolenoidPin = 0//µ×²¿Æø¶¯DIO0
-	UpCogSolenoidPin = 1;//ÉÏ²¿Æø¶¯ÍÆDIO2
+	BotCogSolenoidPin = 0//åº•éƒ¨æ°”åŠ¨DIO0
+	UpCogSolenoidPin = 1;//ä¸Šéƒ¨æ°”åŠ¨æ¨DIO2
 } CANSetting;
 
 ///DIO
 enum DefineDIOPin {
-	CogCollectedPin = 0,//³İÂÖÊÕÈëÎ¢¶¯¿ª¹ØDIO
-	CogDistancePin = 2;//ºìÍâ²â¾àµ²°å
+	CogCollectedPin = 0,//é½¿è½®æ”¶å…¥å¾®åŠ¨å¼€å…³DIO
+	CogDistancePin = 2;//çº¢å¤–æµ‹è·æŒ¡æ¿
 } DIOSetting;
 
 ///PWM
 enum DefinePWMPin {
-	RBaseMotorPin = 0,//PWM0µ×ÅÌÓÒÂÖ
-	LBaseMotorPin = 1,//PWM1µ×ÅÌ×óÂÖ
-	CogFriWheelPin = 2,//³İÂÖÄ¦²ÁÂÖPWM2
-	CollectBallWheelPin = 3,//¼ñÇòÄ¦²ÁÂÖPWM3
-	SBTransferBeltPin = 4,//Çò´«ËÍ´øPWM4
-	SBTransferWheelPin = 5,//´«ÇòĞ¡ÂÖPWM5
-	SBShootWheelPin = 6,//ÉäÇòÂÖPWM6
-	SBAngleMotorPin = 7,//Éä»÷½Ç¶Èµç»úPWM7
-	ClimbingMotorPin = 8//ÅÀÉıµç»úPWM8
+	RBaseMotorPin = 0,//PWM0åº•ç›˜å³è½®
+	LBaseMotorPin = 1,//PWM1åº•ç›˜å·¦è½®
+	CogFriWheelPin = 2,//é½¿è½®æ‘©æ“¦è½®PWM2
+	CollectBallWheelPin = 3,//æ¡çƒæ‘©æ“¦è½®PWM3
+	SBTransferBeltPin = 4,//çƒä¼ é€å¸¦PWM4
+	SBTransferWheelPin = 5,//ä¼ çƒå°è½®PWM5
+	SBShootWheelPin = 6,//å°„çƒè½®PWM6
+	SBAngleMotorPin = 7,//å°„å‡»è§’åº¦ç”µæœºPWM7
+	ClimbingMotorPin = 8//çˆ¬å‡ç”µæœºPWM8
 } PWMSetting;
 
-//¡ª¡ª¡ª¡ª¡ª¡ª³£Á¿Éè¶¨
-const double CogFriWheelSpeed = 1;//³İÂÖÄ¦²ÁÂÖÂúËÙ
-const double SpeedLowLimit = 0.3;//³µÉíËÙ¶ÈÏÂÏŞ
-const double AngleCoe = 0.2;//½Ç¶Èµ÷ÕûPÏµÊı
-const int AngleTolerate = 10;//½Ç¶Èµ÷ÕûÈİÈÌ·¶Î§
-const int AngleSliderCoe = 50;//½Ç¶Èµ÷Õû²¦Æ¬µ÷Õû±¶Êı
-const double SlowClimbSpeed = 0.3;//ÂıËÙÅÀÉş×ªËÙ
-const double FastClimbSpeed = 1;//¿ìËÙÅÀÉş×ªËÙ
+//â€”â€”â€”â€”â€”â€”å¸¸é‡è®¾å®š
+const double CogFriWheelSpeed = 1;//é½¿è½®æ‘©æ“¦è½®æ»¡é€Ÿ
+const double SpeedLowLimit = 0.3;//è½¦èº«é€Ÿåº¦ä¸‹é™
+const double AngleCoe = 0.2;//è§’åº¦è°ƒæ•´Pç³»æ•°
+const int AngleTolerate = 10;//è§’åº¦è°ƒæ•´å®¹å¿èŒƒå›´
+const int AngleSliderCoe = 50;//è§’åº¦è°ƒæ•´æ‹¨ç‰‡è°ƒæ•´å€æ•°
+const double SlowClimbSpeed = 0.3;//æ…¢é€Ÿçˆ¬ç»³è½¬é€Ÿ
+const double FastClimbSpeed = 1;//å¿«é€Ÿçˆ¬ç»³è½¬é€Ÿ
 const double MeterConvert = 1.3;
-const double AutoMovingSpeed = 0.8;//×Ô¶¯ÒÆ¶¯ËÙ¶È
+const double AutoMovingSpeed = 0.8;//è‡ªåŠ¨ç§»åŠ¨é€Ÿåº¦
 
-								   //¡ª¡ª¡ª¡ª¡ª¡ª×´Ì¬Éè¶¨
+								   //â€”â€”â€”â€”â€”â€”çŠ¶æ€è®¾å®š
 bool BotSolenoidDown = false;
 bool UpSolenoidDown = false;
 bool CogCollected = false;
@@ -73,7 +73,7 @@ int AnglePosition = 0;
 bool Calibrated = false;
 
 
-//¡ª¡ª¡ª¡ª¡ª¡ª½×¶Îº¯Êı
+//â€”â€”â€”â€”â€”â€”é˜¶æ®µå‡½æ•°
 class Robot : public frc::IterativeRobot {
 public:
 	Robot() {
@@ -90,13 +90,13 @@ private:
 	frc::Solenoid BotCogSolenoid{ BotCogSolenoidPin };
 	frc::Solenoid UpCogSolenoid{ UpCogSolenoidPin };
 
-	frc::Talon CogFriWheel{ CogFriWheelPin };//³İÂÖÄ¦²ÁÂÖ
-	frc::Talon BallFriWheel{ CollectBallWheelPin };//¼ñÇòÄ¦²ÁÂÖ
-	frc::Talon BallTransferBelt{ SBTransferBeltPin };//Çò´«ËÍ´ø
-	frc::Talon BallTransferWheel{ SBTransferWheelPin };//´«ÇòĞ¡ÂÖ
-	frc::Talon ShootWheel{ SBShootWheelPin };//ÉäÇòµç»ú
-	frc::Talon AngleMotor{ SBAngleMotorPin };//½Ç¶Èµ÷Õûµç»ú
-	frc::Talon ClimbingMotor{ ClimbingMotorPin };//ÅÀÉşµç»ú
+	frc::Talon CogFriWheel{ CogFriWheelPin };//é½¿è½®æ‘©æ“¦è½®
+	frc::Talon BallFriWheel{ CollectBallWheelPin };//æ¡çƒæ‘©æ“¦è½®
+	frc::Talon BallTransferBelt{ SBTransferBeltPin };//çƒä¼ é€å¸¦
+	frc::Talon BallTransferWheel{ SBTransferWheelPin };//ä¼ çƒå°è½®
+	frc::Talon ShootWheel{ SBShootWheelPin };//å°„çƒç”µæœº
+	frc::Talon AngleMotor{ SBAngleMotorPin };//è§’åº¦è°ƒæ•´ç”µæœº
+	frc::Talon ClimbingMotor{ ClimbingMotorPin };//çˆ¬ç»³ç”µæœº
 
 	void AutonomousInit() override {
 		timer.Reset();
@@ -125,50 +125,50 @@ private:
 
 		SensorUpdate();
 
-		//¿ØÖÆ
+		//æ§åˆ¶
 		myRobot.ArcadeDrive(stick);
 
-		///ÊÕ³İÂÖ
+		///æ”¶é½¿è½®
 		if (NewCommend(CogSolenoidDownBut)) {
 			if (BotSolenoidDown) {
-				LeftSolenoid();//ÒÑ¾­½µÏÂÀ´µÄÇé¿öÑ¡ÔñÉÏÌ§
+				LeftSolenoid();//å·²ç»é™ä¸‹æ¥çš„æƒ…å†µé€‰æ‹©ä¸ŠæŠ¬
 			}
 			else {
-				PutDownSolenoid()£»//Î´½µÏÂÀ´µÄÇé¿öÑ¡ÔñÏÂ½µ
+				PutDownSolenoid()ï¼›//æœªé™ä¸‹æ¥çš„æƒ…å†µé€‰æ‹©ä¸‹é™
 			}
 		}
 
-		///¹Ò³İÂÖ
+		///æŒ‚é½¿è½®
 		if (ThisButState[PutCogBut]) {
 			if (NewCommend(PutCogBut) && BotSolenoidDown) {
-				LeftSolenoid();//ÒÑ¾­½µÏÂÀ´µÄÇé¿öÑ¡ÔñÉÏÌ§
+				LeftSolenoid();//å·²ç»é™ä¸‹æ¥çš„æƒ…å†µé€‰æ‹©ä¸ŠæŠ¬
 			}
 			else {
-				PutCog()£»//¹Ò³İÂÖ
+				PutCog()ï¼›//æŒ‚é½¿è½®
 			}
 		}
 
 
-		if (CogCollected&&SolenoidDown)LeftSolenoid();//³İÂÖ½ÓÈëºó×Ô¶¯Ì§Éı
-		if (ThisButState[FastModeBut])FastMode = true;//ÇĞ»»Îª¿ìËÙÄ£Ê½
-		if (ThisButState[SlowModeBut])FastMode = false;//ÇĞ»»ÎªÎ¢µ÷Ä£Ê½
-		if (ThisButState[CallibrateBut])AngleMotor.Set(AngleCallibrate());//°´×¡µ÷Õû½Ç¶È
-		if (ThisButState[ShootBallBut])ShootBall();//Éä»÷
-		if (ThisButState[FastClimbBut])CimbingMotor.Set(FastClimbSpeed);//¿ìËÙÅÀÉş
-		if (ThisButState[SlowClimbBut])CimbingMotor.Set(SlowClimbSpeed);//ÂıËÙÅÀÉş
+		if (CogCollected&&SolenoidDown)LeftSolenoid();//é½¿è½®æ¥å…¥åè‡ªåŠ¨æŠ¬å‡
+		if (ThisButState[FastModeBut])FastMode = true;//åˆ‡æ¢ä¸ºå¿«é€Ÿæ¨¡å¼
+		if (ThisButState[SlowModeBut])FastMode = false;//åˆ‡æ¢ä¸ºå¾®è°ƒæ¨¡å¼
+		if (ThisButState[CallibrateBut])AngleMotor.Set(AngleCallibrate());//æŒ‰ä½è°ƒæ•´è§’åº¦
+		if (ThisButState[ShootBallBut])ShootBall();//å°„å‡»
+		if (ThisButState[FastClimbBut])CimbingMotor.Set(FastClimbSpeed);//å¿«é€Ÿçˆ¬ç»³
+		if (ThisButState[SlowClimbBut])CimbingMotor.Set(SlowClimbSpeed);//æ…¢é€Ÿçˆ¬ç»³
 
 	}
 	bool NewCommend(int ButIndex) {
-		//Êä³ötrueÈç¹ûÊÇÒ»¸öĞÂµÄtrueĞÅºÅ
+		//è¾“å‡ºtrueå¦‚æœæ˜¯ä¸€ä¸ªæ–°çš„trueä¿¡å·
 		return ((ThisButState[ButIndex]) && (!LastButState[ButIndex]));
 	}
 	void TestPeriodic() override {
 		lw->Run();
 	}
-	//¡ª¡ª¡ª¡ª¡ª¡ª¸üĞÂº¯Êı
-	///×Ü¸üĞÂ
+	//â€”â€”â€”â€”â€”â€”æ›´æ–°å‡½æ•°
+	///æ€»æ›´æ–°
 	void SensorUpdate() {
-		//´Ë´¦¸üĞÂ´«¸ĞÆ÷×´Ì¬!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		//æ­¤å¤„æ›´æ–°ä¼ æ„Ÿå™¨çŠ¶æ€!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//CogCollected=
 		//SolenoidDown=
 		MapUpdate();
@@ -179,7 +179,7 @@ private:
 		}
 	}
 
-	///µØÍ¼
+	///åœ°å›¾
 	const int x = 0;
 	const int y = 1;
 
@@ -197,12 +197,12 @@ private:
 		TimeChange = ThisTime - LastTime;
 
 		/*
-		£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡£¡
-		´Ë´¦¶ÔThisAcc,ThisFacingAngle¸üĞÂ
-		¶ÁÈ¡³öÀ´Ö®ºó½øĞĞ»»Ëã Ê¹ÓÃMeterConvert³£Á¿
-		¼´
+		ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼ï¼
+		æ­¤å¤„å¯¹ThisAcc,ThisFacingAngleæ›´æ–°
+		è¯»å–å‡ºæ¥ä¹‹åè¿›è¡Œæ¢ç®— ä½¿ç”¨MeterConvertå¸¸é‡
+		å³
 		ThisAcc/=MeterConvert;
-		Î´¶ÁÈ¡³öÀ´µÄ»°¼ÇÄ¬ÈÏ0£¬0
+		æœªè¯»å–å‡ºæ¥çš„è¯è®°é»˜è®¤0ï¼Œ0
 		*/
 		ThisVel[x] = LastVel[x] + TimeChange*(LastAcc[x] + ThisAcc[x]) / 2;
 		Pos[x] += TimeChange*(ThisVel[x] + LastVel[x]) / 2;
@@ -217,17 +217,17 @@ private:
 	}
 
 
-	//¡ª¡ª¡ª¡ª¡ª¡ª¶¯×÷º¯Êı
+	//â€”â€”â€”â€”â€”â€”åŠ¨ä½œå‡½æ•°
 
-	///¶Á´«¸ĞÆ÷
+	///è¯»ä¼ æ„Ÿå™¨
 	bool ReadDIO(int pin) {
-		///·µ»Øtrue»òÕßfalse
+		///è¿”å›trueæˆ–è€…false
 		return;
 	}
 
-	///½µ²ù×Ó
+	///é™é“²å­
 	void PutDownSolenoid() {
-		//ÊÕ¼¯³İÂÖ Æô¶¯Á½¸öÆø¸× ×ª¶¯Ä¦²ÁÂÖ
+		//æ”¶é›†é½¿è½® å¯åŠ¨ä¸¤ä¸ªæ°”ç¼¸ è½¬åŠ¨æ‘©æ“¦è½®
 		BotCogSolenoid.Set(true);
 		UpCogSolenoid.Set(true);
 		CogFriWheel.Set(CogFriWheelSpeed);
@@ -235,10 +235,10 @@ private:
 		BotSolenoidDown = true;
 	}
 
-	//¹Ò³İÂÖ
+	//æŒ‚é½¿è½®
 
 	void PutCog() {
-		//¹Ò³İÂÖ ½öÆô¶¯µ×²¿Æø¸× ¹Ø±ÕÄ¦²ÁÂÖ
+		//æŒ‚é½¿è½® ä»…å¯åŠ¨åº•éƒ¨æ°”ç¼¸ å…³é—­æ‘©æ“¦è½®
 		double MarchingSpeed = 0.4;
 		if (ReadDIO(CogDistancePin) && (!BotSolenoidDown))
 		{
@@ -259,17 +259,17 @@ private:
 
 	}
 	void CalculatePos() {
-		//³İÂÖ¹Ò¹³¼ÆËã
+		//é½¿è½®æŒ‚é’©è®¡ç®—
 		double direct_dis;
 		double image_dis;
 		double Standard_dis = 0.01;
 		double Hook_dis = 0.5;
 
 		ReadFromRaspberryPi();
-		//¶ÁÈ¡image_dis;
+		//è¯»å–image_dis;
 		image_dis = image_dis*direct_dis*Standard_dis;
-		CogPos[x] = Pox[x] + direct_dis*cos(ThisFacingAngle) + image_dis*sin(ThisFacingAngle);
-		CogPos[y] = Pox[y] + direct_dis*sin(ThisFacingAngle) + image_dis*cos(ThisFacingAngle);
+		CogPos[x] = Pos[x] + direct_dis*cos(ThisFacingAngle) + image_dis*sin(ThisFacingAngle);
+		CogPos[y] = Pos[y] + direct_dis*sin(ThisFacingAngle) + image_dis*cos(ThisFacingAngle);
 	}
 	bool MoveToPos(double XPos, double YPos, double FinalFacingAngle, double MovingSpeed) {
 		double TargetAngle;
@@ -277,11 +277,11 @@ private:
 		double y_dif;
 		double angletol = 0.04;
 		double angleact = 0.5;
-		double P_angle = 0.9;//½Ç¶Èµ÷ÕûPÏµÊı
+		double P_angle = 0.9;//è§’åº¦è°ƒæ•´Pç³»æ•°
 		double distol = 0.01;
 
 
-		if ((InRange(XPos, distol, Pos[x]) && (InRange(YPos, distol, Pox[y])) {
+		if ((InRange(XPos, distol, Pos[x]) && (InRange(YPos, distol, Pos[y])) {
 			if (InRange(ThisFacingAngle, angletol, FinalFacingAngle)) {
 				return true;
 			}
@@ -291,8 +291,8 @@ private:
 
 		}
 		else {
-			x_dif = Pox[x] - XPos;
-			y_dif = Pox[y] - YPos;
+			x_dif = Pos[x] - XPos;
+			y_dif = Pos[y] - YPos;
 			TargetAngle = atan(x_dif / y_dif);
 			if (InRange(ThisFacingAngle, angleact, TargetAngle)) {
 				myRobot.Drive(MovingSpeed, -(TargetAngle - ThisFacingAngle)*P)
@@ -308,7 +308,7 @@ private:
 		return ((input >= target - tolerate) && (input <= target + tolerate));
 	}
 
-	///Ì§²ù×Ó
+	///æŠ¬é“²å­
 	void LeftSolenoid() {
 		BotCogSolenoid.Set(false);
 		UpCogSolenoid.Set(false);
@@ -317,15 +317,15 @@ private:
 		UpSolenoidDown = false;
 	}
 
-	///Í¼ÏñËã·¨
+	///å›¾åƒç®—æ³•
 	double err = 0;
 
 	void ReadFromRaspberryPi() {
-		err = round(rand() * 100);//ÁÙÊ±Ê¹ÓÃËæ»úÎó²î£¬×îÖÕÓ¦¶ÁÈ¡Ê÷İ®ÅÉÍ¼ÏñÊı¾İ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		err = round(rand() * 100);//ä¸´æ—¶ä½¿ç”¨éšæœºè¯¯å·®ï¼Œæœ€ç»ˆåº”è¯»å–æ ‘è“æ´¾å›¾åƒæ•°æ®!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
 
 	int AngleCallibrate() {
-		//¶ÁÈ¡Îó²î
+		//è¯»å–è¯¯å·®
 
 		err += AngleSliderCoe*(stick.GetZ() - 0.5);
 		if (abs(err)>AngleTolerate) {
@@ -337,7 +337,7 @@ private:
 		return AnglePosition;
 	}
 
-	///ÉäÇò
+	///å°„çƒ
 	void ShootBall(double speed) {
 		double ShootingSpeed;
 		BallTransferBelt.Set(speed);
@@ -346,7 +346,7 @@ private:
 	}
 
 	double CalculateShootingSpeed() {
-		//¼òÂÔÔËËã
+		//ç®€ç•¥è¿ç®—
 		double distance = 0;
 		double height = 3.4;
 		double result = 0;
