@@ -32,8 +32,13 @@ double similar(int a, int b) {
 /** @主函数 */
 int main(int argc, char** argv)
 {
+	VideoCapture cap(0); // open the video camera no. 0
+
+   	if (!cap.isOpened()){
+        	return -1;
+    	}
+	cap.read(src);
 	/// 载入原图像, 返回3通道图像
-	src = imread("1.jpg", 1);
 	
 	///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!加上这句话
 	resize(src, src, Size(), 0.5, 0.5);
