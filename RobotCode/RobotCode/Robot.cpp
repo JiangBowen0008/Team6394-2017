@@ -19,7 +19,7 @@ enum DefineBut {
 	CallibrateBut = 6,//射球自动校准按钮
 	ShootBallBut = 4,//射球按钮
 	CogSolenoidDownBut = 3,//齿轮收集按钮
-	PutCogBut = 5;//挂齿轮按钮
+	PutCogBut = 5,//挂齿轮按钮
 FastModeBut = 10,//快速模式切换按钮
 SlowModeBut = 9,//慢速模式切换按钮
 FastClimbBut = 8,//快速爬升
@@ -115,7 +115,7 @@ private:
 
 	void TeleopInit() override {
 		int i = 1;
-		for{i = 1; i<ButNum; i++} {
+		for(i = 1; i<ButNum; i++) {
 			LastButState[i] = false;
 		}
 	}
