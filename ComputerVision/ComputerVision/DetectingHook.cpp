@@ -37,25 +37,20 @@ int main(int argc, char** argv)
    	if (!cap.isOpened()){
         	return -1;
     	}
-	cap.read(src);
-	/// 载入原图像, 返回3通道图像
-	
-	///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!加上这句话
-	resize(src, src, Size(), 0.5, 0.5);
-	
-	
-	/// 转化成灰度图像并进行平滑
-	cvtColor(src, src_gray, CV_BGR2GRAY);
-	//blur(src_gray, src_gray, Size(3, 3));
 
-	/// 创建窗口
 	char* source_window = "Source";
 	namedWindow(source_window, CV_WINDOW_AUTOSIZE);
-	imshow(source_window, src);
+	
+	while(true){
+		cap.read(src);
+		resize(src, src, Size(), 0.5, 0.5);
+		cvtColor(src, src_gray, CV_BGR2GRAY);
+		imshow(source_window, src);
+		thresh_callback(0,0);
+	}
+	/// 转化成灰度图像并进行平滑
 
-	createTrackbar(" Threshold:", "Source", &thresh, max_thresh, thresh_callback);
-	createTrackbar(" 反光条间距:", "Source", &RefleInterRatio, Max_RefleInterRatio, thresh_callback);
-	thresh_callback(0, 0);
+	/// 创建窗口
 
 	waitKey(0);
 	return(0);
