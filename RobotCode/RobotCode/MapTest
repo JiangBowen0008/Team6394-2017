@@ -126,9 +126,6 @@ private:
 
         SmartDashboard::PutBoolean( "IMU_Connected",        ahrs->IsConnected());
         SmartDashboard::PutNumber(  "IMU_Yaw",              ahrs->GetYaw());
-
-        SmartDashboard::PutNumber(  "Velocity_X",           ahrs->GetVelocityX() );
-        SmartDashboard::PutNumber(  "Velocity_Y",           ahrs->GetVelocityY() );
         SmartDashboard::PutNumber(  "Displacement_X",       ahrs->GetDisplacementX() );
         SmartDashboard::PutNumber(  "Displacement_Y",       ahrs->GetDisplacementY() );
 
