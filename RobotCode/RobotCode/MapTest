@@ -34,7 +34,7 @@ public:
 
 private:
     ///地图
-		double AutoMovingSpeed=0.2;
+	double AutoMovingSpeed=0.5;
     	double CogPos[2]={0,0};
     	double CogAngle=0;
     	double BallPos[2]={0,0};
