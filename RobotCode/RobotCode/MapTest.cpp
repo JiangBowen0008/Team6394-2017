@@ -1,4 +1,3 @@
-#include "WPILib.h"
 #include "AHRS.h"
 
 /**
