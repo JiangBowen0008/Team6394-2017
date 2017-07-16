@@ -1,7 +1,6 @@
 #include "WPILib.h"
 #include "AHRS.h"
 
-
 /**
  * This is a demo program providing a real-time display of navX
  * MXP values.
