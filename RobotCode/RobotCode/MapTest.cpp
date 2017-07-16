@@ -79,8 +79,8 @@ private:
    		double NowAng=0;
 
    		NowX=ahrs->GetDisplacementZ();
-   		NowY=ahrs->GetDisplacementY();
-   		NowAng=ahrs->GetPitch();
+   		NowY=ahrs->GetDisplacementX();
+   		NowAng=ahrs->GetRoll();
 
       	if(InRange(XPos,distol,NowX)&&(InRange(YPos,distol,NowY))){
         	if(InRange(NowAng,angletol,FinalFacingAngle)){
