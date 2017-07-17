@@ -139,7 +139,7 @@ private:
     void TeleopPeriodic() override
     {
         if ( !ahrs ) return;
-        Move(stick.GetRawAxis(1),stick.GetRawAxis(0));
+        Move((stick.GetRawAxis(1)-0.5)*2,(stick.GetRawAxis(0)-0.5)*2);
         if(stick.GetRawButton(2)){
         	MoveToPos(0,0,0,AutoMovingSpeed);
         }
@@ -150,6 +150,7 @@ private:
         SmartDashboard::PutNumber(  "Velocity_Y",           ahrs->GetVelocityY() );
         SmartDashboard::PutNumber(  "Displacement_X",       ahrs->GetDisplacementX() );
         SmartDashboard::PutNumber(  "Displacement_Y",       ahrs->GetDisplacementY() );
+	SmartDashboard::PutNumber(  "Displacement_Z",       ahrs->GetDisplacementZ() );
 
     }
 
