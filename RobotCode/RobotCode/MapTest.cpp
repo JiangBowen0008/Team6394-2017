@@ -78,8 +78,8 @@ private:
    		double NowY=0;
    		double NowAng=0;
 
-   		NowX=ahrs->GetDisplacementZ();
-   		NowY=ahrs->GetDisplacementX();
+   		NowX=ahrs->GetDisplacementX();
+   		NowY=ahrs->GetDisplacementY();
    		NowAng=ahrs->GetRoll();
 
       	if(InRange(XPos,distol,NowX)&&(InRange(YPos,distol,NowY))){
@@ -139,7 +139,7 @@ private:
     void TeleopPeriodic() override
     {
         if ( !ahrs ) return;
-        Move((stick.GetRawAxis(1)-0.5)*2,(stick.GetRawAxis(0)-0.5)*2);
+        Move((stick.GetY()-0.5)*2,(stick.GetX()-0.5)*2);
         if(stick.GetRawButton(2)){
         	MoveToPos(0,0,0,AutoMovingSpeed);
         }
