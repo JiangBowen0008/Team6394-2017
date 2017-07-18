@@ -56,13 +56,10 @@ private:
     double distol=0.01;
 
     void Move(double forward, double Rturn){
-    	double tmp,Fcoe,Rcoe,RMotorValue,LMotorValue;
-    	tmp=abs(forward)+abs(Rturn);
-    	Fcoe=abs(forward)/tmp;
-    	Rcoe=abs(Rturn)/tmp;
-	
-	RMotorValue=forward*Fcoe-Rturn*Rcoe;
-	LMotorValue=-forward*Fcoe-Rturn*Rcoe;
+    	double RMotorValue, LMotorValue;
+
+	RMotorValue = (-forward + Rturn)/2;
+	LMotorValue = (-forward - Rturn)/2;
     	RMotor.Set(RMotorValue);
     	LMotor.Set(LMotorValue);
 	SmartDashboard::PutNumber("RightMotorValue",RMotorValue);
