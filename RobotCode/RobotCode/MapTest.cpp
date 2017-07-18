@@ -27,9 +27,9 @@ class Robot: public IterativeRobot
 {
 	std::shared_ptr<NetworkTable> table;
 	Joystick stick; // only joystick
-    AHRS *ahrs;
-    LiveWindow *lw;
-    int autoLoopCounter;
+    	AHRS *ahrs;
+    	LiveWindow *lw;
+    	int autoLoopCounter;
 
 public:
     Robot() :
@@ -56,14 +56,17 @@ private:
     double distol=0.01;
 
     void Move(double forward, double Rturn){
-    	double tmp,Fcoe,Rcoe;
+    	double tmp,Fcoe,Rcoe,RMotorValue,LMotorValue;
     	tmp=abs(forward)+abs(Rturn);
     	Fcoe=abs(forward)/tmp;
     	Rcoe=abs(Rturn)/tmp;
 	
-	
-    	RMotor.Set(forward*Fcoe-Rturn*Rcoe);
-    	LMotor.Set(-forward*Fcoe-Rturn*Rcoe);
+	RMotorValue=forward*Fcoe-Rturn*Rcoe;
+	LMotorValue=-forward*Fcoe-Rturn*Rcoe;
+    	RMotor.Set(RMotorValue);
+    	LMotor.Set(LMotorValue);
+	SmartDashboard::PutNumber("RightMotorValue",RMotorValue);
+	SmartDashboard::PutNumber("LeftMotorValue",LMotorValue);
     }
 
     bool InRange(double input, double tolerate, double target){
