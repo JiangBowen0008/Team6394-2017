@@ -73,15 +73,17 @@ private:
 	SetForVel+=(forward-MeasureFor/MAX_FOR_SPEED)*P_Vel;
 	SetTurnVel+=(Rturn-MeasureTurn/MAX_TURN_SPEED)*P_angle;
 	
-	Restrict(SetForVel,3);
-	Restrict(SetTurnVel,3);
+	SetForVel=Restrict(SetForVel,3);
+	SetTurnVel=Restrict(SetTurnVel,3);
 	
 	tmpSum=fabs(SetForVel)+fabs(SetTurnVel);
 	double Fcoe=fabs(SetForVel)/tmpSum;
 	double Rcoe=fabs(SetTurnVel)/tmpSum;
+	SetForVel=Restrict(SetForVel,1);
+	SetTurnVel=Restrict(SetTurnVel,1);
 	RMotorValue=Fcoe*SetForVel-Rcoe*SetTurnVel;
 	LMotorValue=-Fcoe*SetForVel-Rcoe*SetTurnVel;
-	
+
     	RMotor.Set(RMotorValue);
     	LMotor.Set(LMotorValue);
 	SmartDashboard::PutNumber("RightMotorValue",RMotorValue);
