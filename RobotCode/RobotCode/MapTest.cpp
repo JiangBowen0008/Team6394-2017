@@ -70,11 +70,18 @@ private:
 	double MeasureFor=ahrs->GetVelocityY();
 	double MeasureTurn=ahrs->GetRoll();
 	
-	SetForVel+=(forward*MAX_FOR_SPEED-MeasureFor)*P_Vel;
-	SetTurnVel+=(Rturn*MAX_TURN_SPEED-MeasureTurn)*P_angle;
+	SetForVel+=(forward-MeasureFor/MAX_FOR_SPEED)*P_Vel;
+	SetTurnVel+=(Rturn-MeasureTurn/MAX_TURN_SPEED)*P_angle;
+	
+	Restrict(SetForVel,3);
+	Restrict(SetTurnVel,3);
 	
 	tmpSum=fabs(SetForVel)+fabs(SetTurnVel);
-
+	double Fcoe=fabs(SetForVel)/tmpSum;
+	double Rcoe=fabs(SetTurnVel)/tmpSum;
+	RMotorValue=Fcoe*SetForVel-Rcoe*SetTurnVel;
+	LMotorValue=-Fcoe*SetForVel-Rcoe*SetTurnVel;
+	
     	RMotor.Set(RMotorValue);
     	LMotor.Set(LMotorValue);
 	SmartDashboard::PutNumber("RightMotorValue",RMotorValue);
@@ -84,7 +91,15 @@ private:
     bool InRange(double input, double tolerate, double target){
         return ((input>=target-tolerate)&&(input<=target+tolerate));
     }
-
+	double Restrict(double In, double Max){
+		double result;
+		if(fabs(In)>Max){
+			result=Max*In/fabs(In);
+		} else {
+			result=In;
+		}
+		return result;
+	}
 
     bool MoveToPos(double XPos,double YPos, double FinalFacingAngle,double MovingSpeed){
      	double TargetAngle=0;
