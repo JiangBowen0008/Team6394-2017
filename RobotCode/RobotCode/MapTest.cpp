@@ -60,9 +60,10 @@ private:
     	tmp=abs(forward)+abs(Rturn);
     	Fcoe=abs(forward)/tmp;
     	Rcoe=abs(Rturn)/tmp;
-
+	
+	
     	RMotor.Set(forward*Fcoe-Rturn*Rcoe);
-    	LMotor.Set(forward*Fcoe+Rturn*Rcoe);
+    	LMotor.Set(-forward*Fcoe-Rturn*Rcoe);
     }
 
     bool InRange(double input, double tolerate, double target){
@@ -139,7 +140,7 @@ private:
     void TeleopPeriodic() override
     {
         if ( !ahrs ) return;
-        Move((stick.GetY()-0.5)*2,(stick.GetX()-0.5)*2);
+        Move(stick.GetY(),stick.GetX());
         if(stick.GetRawButton(2)){
         	MoveToPos(0,0,0,AutoMovingSpeed);
         }
