@@ -54,12 +54,27 @@ private:
     double angleact=0.5;
     double P_angle=0.9;//角度调整P系数
     double distol=0.01;
+    double P_Vel=0.8;//速度调整P系数
+    
+    double SetForVel=0;
+    double SetTurnVel=0;
+
+    consy double MAX_TURN_SPEED=15;
+    const double MAX_FOR_SPEED=12;
 
     void Move(double forward, double Rturn){
-    	double RMotorValue, LMotorValue;
+	double RMotorValue=0;
+    	double LMotorValue=0;
+	double tmpSum=0;
+	
+	double MeasureFor=ahrs->GetVelocityY();
+	double MeasureTurn=ahrs->GetRoll();
+	
+	SetForVel+=(forward*MAX_FOR_SPEED-MeasureFor)*P_Vel;
+	SetTurnVel+=(Rturn*MAX_TURN_SPEED-MeasureTurn)*P_angle;
+	
+	tmpSum=fabs(SetForVel)+fabs(SetTurnVel);
 
-	RMotorValue = (-forward + Rturn)/2;
-	LMotorValue = (-forward - Rturn)/2;
     	RMotor.Set(RMotorValue);
     	LMotor.Set(LMotorValue);
 	SmartDashboard::PutNumber("RightMotorValue",RMotorValue);
@@ -88,7 +103,7 @@ private:
     			Move(0,0);
         		return true;
        		}else{
-   				Move(0,-(FinalFacingAngle-NowAng)*P_angle);
+   			Move(0,-(FinalFacingAngle-NowAng)*P_angle);
        		}
         }else{
    			x_dif=NowX-XPos;
