@@ -3,8 +3,8 @@
 #include "CANTalon.h"
 
 #define CONSTMAXSPEED 7000 //don't change it
-#define SPEEDLIMITRATIO 0.5  //1.0
-#define MAXSPEED 150
+#define MAXSPEED 500
+#define SPEEDLIMITRATIO 0.3  //1.0
 #define SPEEDLIMIT (MAXSPEED*SPEEDLIMITRATIO)//Velocity
 #define OFFSETX 0
 #define OFFSETY 0
@@ -39,6 +39,7 @@ class Robot: public IterativeRobot {
 	//frc::RobotDrive myRobot { 0, 1 };
 	int autoLoopCounter;
 	CANTalon Mag1{1};
+	//CANTalon Mag2{2};
 	CANTalon Mag3{3};
 	bool myinit=1;
 
@@ -93,16 +94,18 @@ private:
 		RMotorValue = ( Y + X)/2*(SPEEDLIMITRATIO);
 		LMotorValue = (-Y + X)/2*(SPEEDLIMITRATIO);
 
-		if(stick.GetRawButton(1)){
+		if(stick.GetRawButton(3)){
 			//while(!stick.GetRawButton(3) && !stick.GetRawButton(2))
-			regulateVel(&Mag1,&LMotor,&Mag3,&RMotor,-1000,1000);
+			regulateVel(&Mag1,&LMotor,&Mag3,&RMotor,-150,150);
 		}
 		else if(stick.GetRawButton(2)){
 			//while(!stick.GetRawButton(3) && !stick.GetRawButton(1))
-			regulateVel(&Mag1,&LMotor,&Mag3,&RMotor,1000,-1000);
+			regulateVel(&Mag1,&LMotor,&Mag3,&RMotor,150,-150);
 		}else{
 			//regulateVel(&Mag1,&LMotor,&Mag3,&RMotor,LMotorValue*MAXSPEED,RMotorValue*MAXSPEED);
-			regulateVel(&Mag1,&LMotor,&Mag3,&RMotor,0,0);
+			//regulateVel(&Mag1,&LMotor,&Mag3,&RMotor,0,0);
+						RMotor.Set(0);
+						LMotor.Set(0);
 		}
 
 
@@ -145,8 +148,8 @@ private:
 			    double curVel2 = -ctal2->GetSpeed();
 				//double lastSet = tal->Get();
 				//double lastSet2 = tal2->Get();
-				double lastSet = setVel;
-				double lastSet2 = setVel2;
+				double lastSet = curVel;
+				double lastSet2 = curVel2;
 				//double lastSet2=lastSet;
 				double delta=1;
 				double delta2=1;
@@ -157,10 +160,15 @@ private:
 					setVel=SPEEDLIMIT;
 				else if(setVel<-SPEEDLIMIT)
 					setVel=-SPEEDLIMIT;
+				if(setVel2>SPEEDLIMIT)
+					setVel2=SPEEDLIMIT;
+				else if(setVel2<-SPEEDLIMIT)
+					setVel2=-SPEEDLIMIT;
 				SmartDashboard::PutNumber("TsetVel", setVel);
-				while(!(setVel-threshold < curVel && curVel < setVel+threshold))
+				SmartDashboard::PutNumber("TsetVel2", setVel2);
+				while(setVel-threshold > curVel || curVel > setVel+threshold || setVel2-threshold > curVel2 || curVel2 > setVel2+threshold)
 				{
-					if(stick.GetRawButton(3))
+					if(stick.GetRawButton(1))
 						break;
 					if(fabs(curVel)>SPEEDLIMIT)
 						break;
@@ -396,6 +404,9 @@ private:
 
 		if (!ahrs)
 			return;
+		//Mag1.Set(0.7);
+		//Mag2.Set(0.2); //捡球
+		//Mag3.Set(0.7);
 		//myRobot.ArcadeDrive(stick);
 		Move(stick.GetX(),stick.GetY());
 
