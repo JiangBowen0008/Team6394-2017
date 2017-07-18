@@ -58,7 +58,7 @@ private:
 		RMotorSet-=P_COE*(RMotorSpeed-LMotorSpeed)/4000;
 
 		LMotor.Set(0.3*Forward);
-		RMotor.Set(RMotorSpeed);
+		RMotor.Set(RMotorSet);
 		frc::Wait(0.05);
 
 		SmartDashboard::PutNumber("RightMotorValue", RMotorSet);
