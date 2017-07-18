@@ -33,7 +33,7 @@ private:
 
 	double angletol = 0.04;
 	double angleact = 0.5;
-	double P_angle = 0.9;		//角度调整P系数
+	double P_angle = 0.9;
 	double distol = 0.01;
 
 	void MyInit(){
@@ -47,19 +47,21 @@ private:
 
 	void Move(double Forward, double Turn) {
 
-		const double P_COE=0.5;
+		const double P_COE=0.2;
 
 		static double RMotorSet=0;
 		static double LMotorSet=0;
 
-		double RMotorSpeed = Mag1.GetSpeed();
-		double LMotorSpeed = Mag3.GetSpeed();
+		double RMotorSpeed = Mag3.GetSpeed();
+		double LMotorSpeed = Mag1.GetSpeed();
 
-		RMotorSet-=P_COE*(RMotorSpeed-LMotorSpeed)/4000;
-
-		LMotor.Set(0.3*Forward);
+		//RMotorSet-=P_COE*(RMotorSpeed-LMotorSpeed)/4000;
+		RMotorSet-=P_COE*(-RMotorSpeed-0.3*Forward*1050-0.3*Turn*1050)/1050;
+		LMotorSet-=P_COE*(LMotorSpeed-0.3*Forward*1050+0.3*Turn*1050)/1050;
+		LMotor.Set(-LMotorSet);
 		RMotor.Set(RMotorSet);
 		frc::Wait(0.05);
+		printf("RMotorSpeed=%f\tLMotorSpeed=%f\tLMotorSet=%f\tRMotorSet=%f\n",RMotorSpeed,LMotorSpeed,LMotorSet,RMotorSet);
 
 		SmartDashboard::PutNumber("RightMotorValue", RMotorSet);
 		SmartDashboard::PutNumber("LeftMotorValue", LMotorSet);
@@ -112,7 +114,8 @@ private:
 		if (!ahrs)
 			return;
 
-		Move(stick.GetThrottle(),0);
+		//Move(stick.GetThrottle(),0);
+		Move(stick.GetY(),stick.GetX());
 
 		Mag1.SetFeedbackDevice(CANTalon::CtreMagEncoder_Absolute);
 		Mag3.SetFeedbackDevice(CANTalon::CtreMagEncoder_Absolute);
