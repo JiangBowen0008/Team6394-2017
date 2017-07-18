@@ -3,7 +3,7 @@
 #include "CANTalon.h"
 
 #define CONSTMAXSPEED 7000 //don't change it
-#define MAXSPEED 500
+#define MAXSPEED 550
 #define SPEEDLIMITRATIO 0.3  //1.0
 #define SPEEDLIMIT (MAXSPEED*SPEEDLIMITRATIO)//Velocity
 #define OFFSETX 0
@@ -95,10 +95,12 @@ private:
 		LMotorValue = (-Y + X)/2*(SPEEDLIMITRATIO);
 
 		if(stick.GetRawButton(3)){
+			printf("------- else1 ----------");
 			//while(!stick.GetRawButton(3) && !stick.GetRawButton(2))
 			regulateVel(&Mag1,&LMotor,&Mag3,&RMotor,-150,150);
 		}
 		else if(stick.GetRawButton(2)){
+			printf("------- else2 ----------");
 			//while(!stick.GetRawButton(3) && !stick.GetRawButton(1))
 			regulateVel(&Mag1,&LMotor,&Mag3,&RMotor,150,-150);
 		}else{
@@ -106,6 +108,7 @@ private:
 			//regulateVel(&Mag1,&LMotor,&Mag3,&RMotor,0,0);
 						RMotor.Set(0);
 						LMotor.Set(0);
+						printf("------- else3 ----------");
 		}
 
 
@@ -148,14 +151,14 @@ private:
 			    double curVel2 = -ctal2->GetSpeed();
 				//double lastSet = tal->Get();
 				//double lastSet2 = tal2->Get();
-				double lastSet = curVel;
-				double lastSet2 = curVel2;
+				static double lastSet = -setVel*13;
+				static double lastSet2 = -setVel2*13;
 				//double lastSet2=lastSet;
 				double delta=1;
 				double delta2=1;
 				long count=0;
-
 				const double threshold=1;
+
 				if(setVel>SPEEDLIMIT)
 					setVel=SPEEDLIMIT;
 				else if(setVel<-SPEEDLIMIT)
@@ -185,10 +188,10 @@ private:
 	//				if(delta<threshold)
 	//					delta=threshold;
 
-					if(delta>MAXSPEED*0.5)
-						delta=MAXSPEED*0.5;
-					if(delta2>MAXSPEED*0.5)
-						delta2=MAXSPEED*0.5;
+					if(delta>SPEEDLIMIT*0.5)
+						delta=SPEEDLIMIT*0.5;
+					if(delta2>SPEEDLIMIT*0.5)
+						delta2=SPEEDLIMIT*0.5;
 
 					tal->Set((lastSet+=delta)/CONSTMAXSPEED);
 					tal2->Set((lastSet2+=delta2)/CONSTMAXSPEED);
@@ -210,6 +213,16 @@ private:
 					SmartDashboard::PutNumber("TMag3V", Mag3.GetSpeed());
 					SmartDashboard::PutNumber("TlastSet1", lastSet);
 					SmartDashboard::PutNumber("TlastSet2", lastSet2);
+
+					printf("delta=%f\t", delta);
+					printf("delta2=%f\t", delta2);
+					printf("TcurVel=%f\t", curVel);
+					printf("TcurVel2=%f\t", curVel2);
+					printf("TMag1V=%f\t", Mag1.GetSpeed());
+					printf("TMag3V=%f\t", Mag3.GetSpeed());
+					printf("TlastSet1=%f\t", lastSet);
+					printf("TlastSet2=%f\n", lastSet2);
+
 
 				}
 			}
