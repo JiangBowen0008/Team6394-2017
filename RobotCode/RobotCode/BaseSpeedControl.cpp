@@ -1,6 +1,7 @@
 #include "WPILib.h"
 #include "AHRS.h"
 #include "CANTalon.h"
+#include "math.h"
 
 
 class Robot: public IterativeRobot {
@@ -68,8 +69,8 @@ private:
 		double LMotorSpeed = LMag.GetSpeed()/FULL_SPEED;
 		RMotorSet-=P_COE*(-RMotorSpeed-SPEED_LIMIT*Forward-SPEED_LIMIT*Turn);
 		LMotorSet-=P_COE*(LMotorSpeed-SPEED_LIMIT*Forward+SPEED_LIMIT*Turn);
-		LMotor.Set(-LMotorSet);
-		RMotor.Set(RMotorSet);
+		LMotor.Set(-SafeLimit(LMotorSet));
+		RMotor.Set(SafeLimit(RMotorSet));
 		
 		//返回数据（用于调试）
 		printf("RMotorSpeed=%f\tLMotorSpeed=%f\tLMotorSet=%f\tRMotorSet=%f\n",RMotorSpeed,LMotorSpeed,LMotorSet,RMotorSet);
@@ -87,7 +88,13 @@ private:
 		//SmartDashboard::PutNumber("tmp", tmp);
 	}
 
-
+	double SafeLimit(double input){
+		const double MAX_SPEED=0.5;
+		if(fabs(input)>MAX_SPEED){
+			return MAX_SPEED*(fabs(input)/input);
+		}
+		return input;
+	}
 
 	bool InRange(double input, double tolerate, double target) {
 		return ((input >= target - tolerate) && (input <= target + tolerate));
