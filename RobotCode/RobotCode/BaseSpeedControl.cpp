@@ -82,6 +82,8 @@ private:
 		SmartDashboard::PutNumber("MagVelR", RMag.GetSpeed());
 		SmartDashboard::PutNumber("lastSetR", RMotor.Get());
 		SmartDashboard::PutNumber("lastSetL", LMotor.Get());
+		SmartDashboard::PutNumber("XDisplacement", pos[x]);
+		SmartDashboard::PutNumber("YDisplacement", pos[y]);
 		//SmartDashboard::PutNumber("tmp", tmp);
 	}
 
