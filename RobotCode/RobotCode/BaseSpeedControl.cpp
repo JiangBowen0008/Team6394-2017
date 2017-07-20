@@ -59,9 +59,9 @@ private:
 		pos[y]+=sin(FacingAngle)*distance;
 
 		//PID控制速度
-		double P_COE=(stick.GetThrottle()+0.5)*0.03;//P系数 0.03
+		double P_COE=(stick.GetThrottle()+0.5)*0.1;//P系数 0.03
 
-		const double SPEED_LIMIT=0.3;//最大限速
+		const double SPEED_LIMIT=0.4;//最大限速
 		const double FULL_SPEED=1050;//编码器最高读数
 
 		static double RMotorSet=0;
@@ -74,9 +74,10 @@ private:
 			LMotor.StopMotor();
 			RMotor.StopMotor();
 		}//关机
-		
-		RMotorSet-=P_COE*(-RMotorSpeed-SPEED_LIMIT*Forward-0.2*Turn);
-		LMotorSet-=P_COE*(LMotorSpeed-SPEED_LIMIT*Forward+0.2*Turn);
+		RSetDelta=-RMotorSpeed-SPEED_LIMIT*Forward-0.2*Turn;
+		LSetDelta=LMotorSpeed-SPEED_LIMIT*Forward+0.2*Turn;
+		RMotorSet-=P_COE*fabs(RSetDelta)*RSetDelta;
+		LMotorSet-=P_COE*fabs(LSetDelta)*LSetDelta;
 		LMotor.Set(-SafeLimit(LMotorSet));
 		RMotor.Set(SafeLimit(RMotorSet));
 
