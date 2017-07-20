@@ -69,6 +69,12 @@ private:
 
 		double RMotorSpeed = RMag.GetSpeed()/FULL_SPEED;
 		double LMotorSpeed = LMag.GetSpeed()/FULL_SPEED;
+		
+		if((Forward==0)&&(Turn==0)){
+			LMotor.StopMotor();
+			RMotor.StopMotor();
+		}//关机
+		
 		RMotorSet-=P_COE*(-RMotorSpeed-SPEED_LIMIT*Forward-0.2*Turn);
 		LMotorSet-=P_COE*(LMotorSpeed-SPEED_LIMIT*Forward+0.2*Turn);
 		LMotor.Set(-SafeLimit(LMotorSet));
@@ -141,7 +147,7 @@ private:
 			return;
 
 		//Move(stick.GetThrottle(),0);
-		Move(stick.GetY(),Noise(stick.GetX(),0.7));
+		Move(Noise(stick.GetY(),0.1),Noise(stick.GetX(),0.6));
 
 		LMag.SetFeedbackDevice(CANTalon::CtreMagEncoder_Absolute);
 		RMag.SetFeedbackDevice(CANTalon::CtreMagEncoder_Absolute);
