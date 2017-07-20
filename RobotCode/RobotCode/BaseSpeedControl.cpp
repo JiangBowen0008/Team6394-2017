@@ -26,7 +26,7 @@ public:
 private:
 	frc::Talon RMotor { 0 };
 	frc::Talon LMotor { 1 };
-
+	double pos[]={0,0};
 
 	void MagInit(){
 		LMag.SetPosition(0);
@@ -41,10 +41,12 @@ private:
 		const int y=1;
 		const double CONVERT=1;//单位转换(编码器单位->米)
 
-		static double pos[]={0,0};
+
 		static double LastRDistance=0;
 		static double LastLDistance=0;
-
+		//this
+		//rvel+lvel)/2)*(this.-last)
+		//	last=this
 		double RDistance=RMag.GetPosition();
 		double LDistance=LMag.GetPosition();
 		double RDelta=RDistance-LastRDistance;
@@ -57,7 +59,7 @@ private:
 		pos[y]+=sin(FacingAngle)*distance;
 
 		//PID控制速度
-		double P_COE=(stick.GetThrottle()+0.5)*0.25;//P系数 0.03
+		double P_COE=(stick.GetThrottle()+0.5)*0.03;//P系数 0.03
 
 		const double SPEED_LIMIT=0.3;//最大限速
 		const double FULL_SPEED=1050;//编码器最高读数
