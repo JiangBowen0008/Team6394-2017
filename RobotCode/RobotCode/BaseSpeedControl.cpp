@@ -1,6 +1,7 @@
 #include "WPILib.h"
 #include "AHRS.h"
 #include "CANTalon.h"
+#include "math.h"
 
 
 class Robot: public IterativeRobot {
@@ -10,57 +11,68 @@ class Robot: public IterativeRobot {
 	LiveWindow *lw;
 	//frc::RobotDrive myRobot { 0, 1 };
 	CANTalon LMag{1};
-	CANTalon RMag3{3};
-	bool myinit=1;
+	CANTalon RMag{3};
+	frc::Timer timer;
 
 public:
 	Robot() :
-		table(NULL), stick(0),
-		// as they are declared above.
+		table(NULL),
+		stick(0),
 		ahrs(NULL),
 		lw(NULL)
 		{
-
+			timer.Start();
 		}
 private:
 	frc::Talon RMotor { 0 };
 	frc::Talon LMotor { 1 };
 
-	double AutoMovingSpeed = 0.5;
-	double CogPos[2] = { 0, 0 };
-	double CogAngle = 0;
-	double BallPos[2] = { 0, 0 };
 
-	double angletol = 0.04;
-	double angleact = 0.5;
-	double P_angle = 0.9;
-	double distol = 0.01;
+	void MagInit(){
+		LMag.SetPosition(0);
+		RMag.SetPosition(0);
 
-	void MyInit(){
-		if(myinit){
-			LMag.SetPosition(0);
-			RMag.SetPosition(0);
-			myinit=0;
-		}
 	}
-
 
 	void Move(double Forward, double Turn) {
 
-		const double P_COE=0.2;
+		//记录路程（地图数据）
+		const int x=0;
+		const int y=1;
+		const double CONVERT=1;//单位转换(编码器单位->米)
+
+		static double pos[]={0,0};
+		static double LastRDistance=0;
+		static double LastLDistance=0;
+
+		double RDistance=RMag.GetPosition();
+		double LDistance=LMag.GetPosition();
+		double RDelta=RDistance-LastRDistance;
+		double LDelta=LDistance-LastLDistance;
+		LastRDistance=RDistance;
+		LastLDistance=LDistance;
+		double FacingAngle=ahrs->GetRoll();
+		double distance=CONVERT*(RDelta+LDelta)/2;
+		pos[x]+=cos(FacingAngle)*distance;
+		pos[y]+=sin(FacingAngle)*distance;
+
+		//PID控制速度
+		double P_COE=(stick.GetThrottle()+0.5)*0.25;//P系数 0.03
+
+		const double SPEED_LIMIT=0.3;//最大限速
+		const double FULL_SPEED=1050;//编码器最高读数
 
 		static double RMotorSet=0;
 		static double LMotorSet=0;
 
-		double RMotorSpeed = RMag.GetSpeed();
-		double LMotorSpeed = LMag.GetSpeed();
+		double RMotorSpeed = RMag.GetSpeed()/FULL_SPEED;
+		double LMotorSpeed = LMag.GetSpeed()/FULL_SPEED;
+		RMotorSet-=P_COE*(-RMotorSpeed-SPEED_LIMIT*Forward-0.2*Turn);
+		LMotorSet-=P_COE*(LMotorSpeed-SPEED_LIMIT*Forward+0.2*Turn);
+		LMotor.Set(-SafeLimit(LMotorSet));
+		RMotor.Set(SafeLimit(RMotorSet));
 
-		//RMotorSet-=P_COE*(RMotorSpeed-LMotorSpeed)/4000;
-		RMotorSet-=P_COE*(-RMotorSpeed-0.3*Forward*1050-0.3*Turn*1050)/1050;
-		LMotorSet-=P_COE*(LMotorSpeed-0.3*Forward*1050+0.3*Turn*1050)/1050;
-		LMotor.Set(-LMotorSet);
-		RMotor.Set(RMotorSet);
-		frc::Wait(0.05);
+		//返回数据（用于调试）
 		printf("RMotorSpeed=%f\tLMotorSpeed=%f\tLMotorSet=%f\tRMotorSet=%f\n",RMotorSpeed,LMotorSpeed,LMotorSet,RMotorSet);
 
 		SmartDashboard::PutNumber("RightMotorValue", RMotorSet);
@@ -71,10 +83,19 @@ private:
 		SmartDashboard::PutNumber("MagVelR", RMag.GetSpeed());
 		SmartDashboard::PutNumber("lastSetR", RMotor.Get());
 		SmartDashboard::PutNumber("lastSetL", LMotor.Get());
+		SmartDashboard::PutNumber("XDisplacement", pos[x]);
+		SmartDashboard::PutNumber("YDisplacement", pos[y]);
+		SmartDashboard::PutNumber("PCOE", P_COE);
 		//SmartDashboard::PutNumber("tmp", tmp);
 	}
 
-
+	double SafeLimit(double input){
+		const double MAX_SPEED=0.5;
+		if(fabs(input)>MAX_SPEED){
+			return MAX_SPEED*(fabs(input)/input);
+		}
+		return input;
+	}
 
 	bool InRange(double input, double tolerate, double target) {
 		return ((input >= target - tolerate) && (input <= target + tolerate));
@@ -82,6 +103,7 @@ private:
 
 
 	void RobotInit() override{
+		MagInit();
 		table = NetworkTable::GetTable("datatable");
 		lw = LiveWindow::GetInstance();
 		try {
@@ -107,21 +129,23 @@ private:
 
 	}
 
-	void TeleopPeriodic() override{
+	double Noise(double input,double min){
+		return fabs(input)>=min?(fabs(input)-min)*(fabs(input)/input):0;
+	}
 
-		MyInit();
+	void TeleopPeriodic() override{
 
 		if (!ahrs)
 			return;
 
 		//Move(stick.GetThrottle(),0);
-		Move(stick.GetY(),stick.GetX());
+		Move(stick.GetY(),Noise(stick.GetX(),0.7));
 
 		LMag.SetFeedbackDevice(CANTalon::CtreMagEncoder_Absolute);
 		RMag.SetFeedbackDevice(CANTalon::CtreMagEncoder_Absolute);
 		SmartDashboard::PutBoolean("IMU_Connected", ahrs->IsConnected());
-		SmartDashboard::PutNumber("LMag1",LMag.GetPosition());
-		SmartDashboard::PutNumber("RMag3",RMag.GetPosition());
+		SmartDashboard::PutNumber("LMag",LMag.GetPosition());
+		SmartDashboard::PutNumber("RMag",RMag.GetPosition());
 		SmartDashboard::PutNumber("Velocity_X", ahrs->GetVelocityX());
 		SmartDashboard::PutNumber("Velocity_Y", ahrs->GetVelocityY());
 		SmartDashboard::PutNumber("Displacement_X", ahrs->GetDisplacementX());
@@ -129,6 +153,8 @@ private:
 		SmartDashboard::PutNumber("Displacement_Z", ahrs->GetDisplacementZ());
 		SmartDashboard::PutNumber("JoysitckX", stick.GetX());
 		SmartDashboard::PutNumber("JoystickY", stick.GetY());
+
+		//frc::Wait(0.001);
 	}
 
 	void TestPeriodic() override{
