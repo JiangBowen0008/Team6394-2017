@@ -9,8 +9,8 @@ class Robot: public IterativeRobot {
 	AHRS *ahrs;
 	LiveWindow *lw;
 	//frc::RobotDrive myRobot { 0, 1 };
-	CANTalon Mag1{1};
-	CANTalon Mag3{3};
+	CANTalon LMag{1};
+	CANTalon RMag3{3};
 	bool myinit=1;
 
 public:
@@ -38,8 +38,8 @@ private:
 
 	void MyInit(){
 		if(myinit){
-			Mag1.SetPosition(0);
-			Mag3.SetPosition(0);
+			LMag.SetPosition(0);
+			RMag.SetPosition(0);
 			myinit=0;
 		}
 	}
@@ -52,8 +52,8 @@ private:
 		static double RMotorSet=0;
 		static double LMotorSet=0;
 
-		double RMotorSpeed = Mag3.GetSpeed();
-		double LMotorSpeed = Mag1.GetSpeed();
+		double RMotorSpeed = RMag.GetSpeed();
+		double LMotorSpeed = LMag.GetSpeed();
 
 		//RMotorSet-=P_COE*(RMotorSpeed-LMotorSpeed)/4000;
 		RMotorSet-=P_COE*(-RMotorSpeed-0.3*Forward*1050-0.3*Turn*1050)/1050;
@@ -67,8 +67,8 @@ private:
 		SmartDashboard::PutNumber("LeftMotorValue", LMotorSet);
 //		SmartDashboard::PutNumber("forward", forward);
 //		SmartDashboard::PutNumber("Rturn", Rturn);
-		SmartDashboard::PutNumber("MagVelL", Mag1.GetSpeed());
-		SmartDashboard::PutNumber("MagVelR", Mag3.GetSpeed());
+		SmartDashboard::PutNumber("MagVelL", LMag.GetSpeed());
+		SmartDashboard::PutNumber("MagVelR", RMag.GetSpeed());
 		SmartDashboard::PutNumber("lastSetR", RMotor.Get());
 		SmartDashboard::PutNumber("lastSetL", LMotor.Get());
 		//SmartDashboard::PutNumber("tmp", tmp);
@@ -117,11 +117,11 @@ private:
 		//Move(stick.GetThrottle(),0);
 		Move(stick.GetY(),stick.GetX());
 
-		Mag1.SetFeedbackDevice(CANTalon::CtreMagEncoder_Absolute);
-		Mag3.SetFeedbackDevice(CANTalon::CtreMagEncoder_Absolute);
+		LMag.SetFeedbackDevice(CANTalon::CtreMagEncoder_Absolute);
+		RMag.SetFeedbackDevice(CANTalon::CtreMagEncoder_Absolute);
 		SmartDashboard::PutBoolean("IMU_Connected", ahrs->IsConnected());
-		SmartDashboard::PutNumber("Mag1",Mag1.GetPosition());
-		SmartDashboard::PutNumber("Mag3",Mag3.GetPosition());
+		SmartDashboard::PutNumber("LMag1",LMag.GetPosition());
+		SmartDashboard::PutNumber("RMag3",RMag.GetPosition());
 		SmartDashboard::PutNumber("Velocity_X", ahrs->GetVelocityX());
 		SmartDashboard::PutNumber("Velocity_Y", ahrs->GetVelocityY());
 		SmartDashboard::PutNumber("Displacement_X", ahrs->GetDisplacementX());
