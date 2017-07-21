@@ -107,6 +107,36 @@ private:
 		//rvel+lvel)/2)*(this.-last)
 
 		//	last=this
+		
+		
+		/*
+		double setVelL = (Forward + Turn)*SPEEDRATIO;		//设定真实值
+		double setVelR = (Forward - Turn)*SPEEDRATIO;		//设定真实值
+		
+		double comp_L = fabs(fabs(LMag.GetSpeed())-fabs(setVelL))*P_COE / SPEEDRATIO;		//P_COE = 0.618
+		double comp_R = fabs(fabs(RMag.GetSpeed())-fabs(setVelR))*P_COE / SPEEDRATIO;		//P_COE = 0.618
+		
+		if(LMag.GetSpeed() < setVelL)
+		{
+			LMotor.Set(LMotor.Get() + comp_L);
+		}
+		else
+		{
+			LMotor.Set(LMotor.Get() - comp-L);
+		}
+		
+		if(RMag.GetSpeed() < setVelR)
+		{
+			RMotor.Set(RMotor.Get() + comp_R);
+		}
+		else
+		{
+			RMotor.Set(RMotor.Get() - comp-R);
+		}
+		
+		
+		*/
+		
 
 		double RDistance=RMag.GetPosition();
 
