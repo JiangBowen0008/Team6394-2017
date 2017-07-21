@@ -134,11 +134,12 @@ private:
 
 		double I_COE=(stick.GetThrottle())*5;
 
+		double D_COE=0.2;
+		
 
+		const double SPEED_LIMIT=0.5;//最大限速
 
-		const double SPEED_LIMIT=0.4;//最大限速
-
-		const double FULL_SPEED=1050;//编码器最高读数
+		const double FULL_SPEED=700;//编码器最高读数
 
 		double RMotorSet=0;
 
@@ -153,6 +154,10 @@ private:
 		static double RAddErr=0;
 
 		static double LAddErr=0;
+		
+		static double RLastErr=0;
+		
+		static double LLastErr=0;
 
 		if((Forward==0)&&(Turn==0)){
 
@@ -167,20 +172,28 @@ private:
 			double RSetDelta=-RMotorSpeed-SPEED_LIMIT*Forward-SPEED_LIMIT*Turn;
 
 			double LSetDelta=LMotorSpeed-SPEED_LIMIT*Forward+SPEED_LIMIT*Turn;
+			
+			double RPrime=RSetDelta-RLastErr;
+			
+			double LPrime=LSetDelta-LLastErr;
+			
+			RLastErr=RSetDelta;
+			
+			LLastErr=LSetDelta;
 
 			RAddErr+=RSetDelta;
 
 			LAddErr+=LSetDelta;
 
-			RMotorSet=RMotorSet-P_COE*fabs(RSetDelta)*RSetDelta+I_COE*RAddErr;
+			RMotorSet=-P_COE*RSetDelta+I_COE*RAddErr+D_COE*RPrime;
 
-			LMotorSet=LMotorSet-P_COE*fabs(LSetDelta)*LSetDelta+I_COE*LAddErr;
+			LMotorSet=-P_COE*LSetDelta+I_COE*LAddErr+D_COE*LPrime;
 
 		}
 
-		LMotor.Set(-SafeLimit(LMotorSet+0.7*(SPEED_LIMIT*Forward+SPEED_LIMIT*Turn),0.7));
+		LMotor.Set(-SafeLimit(LMotorSet+1.5*(SPEED_LIMIT*Forward+SPEED_LIMIT*Turn),0.7));
 
-		RMotor.Set(SafeLimit(RMotorSet+0.7*(SPEED_LIMIT*Forward-SPEED_LIMIT*Turn),0.7));
+		RMotor.Set(SafeLimit(RMotorSet+1.5*(SPEED_LIMIT*Forward-SPEED_LIMIT*Turn),0.7));
 
 
 
