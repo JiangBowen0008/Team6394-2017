@@ -8,6 +8,8 @@
 
 
 
+#define SPEEDRATIO 500
+
 
 
 class Robot: public IterativeRobot {
@@ -59,9 +61,9 @@ public:
 
 private:
 
-	frc::Talon RMotor { 0 };
+	frc::Talon RMotor { 0 };	//-xxx
 
-	frc::Talon LMotor { 1 };
+	frc::Talon LMotor { 1 };	//+xxx
 
 
 
@@ -147,9 +149,9 @@ private:
 
 
 
-		double RMotorSpeed = RMag.GetSpeed()/FULL_SPEED;
+		double RMotorSpeed = RMag.GetSpeed()/FULL_SPEED;	//+xxx
 
-		double LMotorSpeed = LMag.GetSpeed()/FULL_SPEED;
+		double LMotorSpeed = LMag.GetSpeed()/FULL_SPEED;	//-xxx
 
 		static double RAddErr=0;
 
