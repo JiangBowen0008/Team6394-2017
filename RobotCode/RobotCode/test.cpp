@@ -84,8 +84,8 @@ private:
 		}
 		
 		//返回数据（用于调试）
-		printf("RMotorSpeed=%f\tLMotorSpeed=%f\tLMotorSet=%f\tRMotorSet=%f\n",RMotorSpeed,LMotorSpeed,LMotorSet,RMotorSet);
-
+		//printf("RMotorSpeed=%f\tLMotorSpeed=%f\tLMotorSet=%f\tRMotorSet=%f\n",RMotorSpeed,LMotorSpeed,LMotorSet,RMotorSet);
+		printf("RRatio:%f\tLRatio:%f\n",SafeLimit(RMotorSet)/RMotorSpeed,-SafeLimit(LMotorSet)/LMotorSpeed);
 		SmartDashboard::PutNumber("RightMotorValue", RMotorSet);
 		SmartDashboard::PutNumber("LeftMotorValue", LMotorSet);
 //		SmartDashboard::PutNumber("forward", forward);
