@@ -1,53 +1,65 @@
-#include <DigitalInput.h>
-#include <DoubleSolenoid.h>
-#include <Joystick.h>
-#include <SampleRobot.h>
-#include <Solenoid.h>
-#include <Timer.h>
+#include <WPILib.h>
+
+/**
+ * This is a demo program showing the use of the RobotDrive class.
+ * The SampleRobot class is the base of a robot application that will automatically call your
+ * Autonomous and OperatorControl methods at the right time as controlled by the switches on
+ * the driver station or the field controls.
+ *
+ * WARNING: While it may look like a good choice to use for your code if you're inexperienced,
+ * don't. Unless you know what you are doing, complex code will be much more difficult under
+ * this system. Use IterativeRobot or Command-Based instead if you're new.
+ */
+	bool ThisBut2=false;
+	bool LastBut2=false;
+	bool ThisBut3=false;
+	bool LastBut3=false;
 
 class Robot: public frc::SampleRobot {
-public:
-	/**
-	 * Sets the solenoids from the position of joystick buttons.
-	 */
-	void OperatorControl() override {
-		while (IsOperatorControl() && IsEnabled()) {
-			/* The output of GetRawButton is true/false depending on whether
-			 *   the button is pressed; Set takes a boolean for for whether to
-			 *   use the default (false) channel or the other (true).
-			 */
+	frc::RobotDrive myRobot { 0, 1 };  // robot drive system
+	frc::Joystick stick { 0 };  // only joystick
 
-			/* In order to set the double solenoid, we will say that if neither
-			 *   button is pressed, it is off, if just one button is pressed,
-			 *   set the solenoid to correspond to that button, and if both
-			 *   are pressed, set the solenoid to Forwards.
-			 */
-			if (stick.GetRawButton(2)) {
-				BotSol.Set(frc::DoubleSolenoid::kForward);
-			}
-			if (stick.GetRawButton(3)) {
-				BotSol.Set(frc::DoubleSolenoid::kReverse);
-			}
-			if(Sensor.Get()) {
-				BotSol.Set(frc::DoubleSolenoid::kOff);
-			}
-
-		}
-	}
-
-private:
-
-	frc::DoubleSolenoid BotSol { 7, 5 };
-	frc::DoubleSolenoid UpSol { 6, 4 };
+	frc::DoubleSolenoid BotSol { 6, 4 };
+	frc::DoubleSolenoid UpSol { 7, 5 };
 	frc::DigitalInput Sensor {1};
 
-	frc::Joystick stick { 0 };
-
 	static constexpr double kUpdatePeriod = 0.005;
-
 	static constexpr int kDoubleSolenoidForward = 2;
 	static constexpr int kDoubleSolenoidReverse = 3;
 
-};
+
+public:
+
+	Robot() {
+		myRobot.SetExpiration(0.1);
+	}
+
+	/**
+	 * Runs the motors with arcade steering.
+	 */
+
+	void OperatorControl() {
+
+		while (IsOperatorControl() && IsEnabled()) {
+			ThisBut2=stick.GetRawButton(2);
+			ThisBut3=stick.GetRawButton(3);
+
+			if(ThisBut2&&(!LastBut2)) {
+				UpSol.Set(frc::DoubleSolenoid::kForward);
+			}else if (ThisBut3&&(!LastBut3)) {
+				UpSol.Set(frc::DoubleSolenoid::kReverse);
+			}else if(Sensor.Get()){
+				printf("Boooom!\n");
+				UpSol.Set(frc::DoubleSolenoid::kOff);
+			}
+
+			LastBut2=ThisBut2;
+			LastBut3=ThisBut3;
+
+			frc::Wait(kUpdatePeriod);			// wait for a motor update time
+		}
+	}
+
+	};
 
 START_ROBOT_CLASS(Robot)
